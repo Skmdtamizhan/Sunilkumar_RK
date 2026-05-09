@@ -1,0 +1,5 @@
+/* App.css can be kept minimal as we use index.css for globals and module CSS or inline styles for specific things */
+.app {
+  position: relative;
+  overflow: hidden;
+}
