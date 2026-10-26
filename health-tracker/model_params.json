@@ -1,0 +1,28 @@
+{
+  "linear_regression": {
+    "slope": 1.4211333274600049,
+    "intercept": -166.27906157977654,
+    "formula": "Weight_kg = 1.4211 * Height_cm + (-166.2791)",
+    "r2_score": 0.9093056268465874,
+    "rmse_kg": 4.413278023100708
+  },
+  "logistic_regression": {
+    "coef_height": 0.1990986977806599,
+    "coef_weight": -0.38555688700540436,
+    "intercept": -5.355819978798646,
+    "labels": {
+      "0": "Male",
+      "1": "Female"
+    },
+    "test_accuracy": 0.9195,
+    "formula": "P(Female) = 1 / (1 + exp(-(coef_height * Height_cm + coef_weight * Weight_kg + intercept)))"
+  },
+  "metadata": {
+    "training_samples": 8000,
+    "test_samples": 2000,
+    "units": {
+      "height": "cm",
+      "weight": "kg"
+    }
+  }
+}

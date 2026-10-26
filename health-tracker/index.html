@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Height & Weight Health Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0d14;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover: rgba(30, 41, 59, 0.9);
+      --accent-primary: #38bdf8;
+      --accent-secondary: #818cf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #0ea5e9;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.15);
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 90%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent-primary);
+      padding: 0.35rem 1rem;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .badge-pill .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent-primary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-primary);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 span {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 650px;
+      margin: 0 auto 1.5rem auto;
+    }
+
+    /* Top Controls */
+    .top-toolbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .toggle-group {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-full);
+      padding: 4px;
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1.25rem;
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent-gradient);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-action-icon {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-action-icon:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    /* Main Grid Layout */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 1.75rem;
+      align-items: start;
+    }
+
+    @media (max-width: 992px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Glass Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title svg {
+      color: var(--accent-primary);
+    }
+
+    /* Input Controls */
+    .form-group {
+      margin-bottom: 1.35rem;
+    }
+
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.45rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .val-display {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-primary);
+    }
+
+    .input-box-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    input[type="number"], select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 1rem;
+      padding: 0.65rem 0.85rem;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: var(--font-mono);
+    }
+
+    input[type="number"]:focus, select:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    .unit-tag {
+      position: absolute;
+      right: 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .dual-input {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    /* Range Sliders */
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      outline: none;
+      margin-top: 0.6rem;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Sex Selector Buttons */
+    .radio-pill-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .radio-pill {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .radio-pill.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent-primary);
+      color: #fff;
+    }
+
+    /* Primary CTA Button */
+    .btn-calc {
+      width: 100%;
+      background: var(--accent-gradient);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-calc:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+    }
+
+    /* Results Side Area */
+    .results-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* BMI Showcase Hero Card */
+    .bmi-hero-card {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 2rem;
+      align-items: center;
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bmi-hero-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    @media (max-width: 680px) {
+      .bmi-hero-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+    }
+
+    .bmi-score-box {
+      text-align: center;
+      padding: 1rem;
+      border-right: 1px solid var(--card-border);
+    }
+
+    @media (max-width: 680px) {
+      .bmi-score-box {
+        border-right: none;
+        border-bottom: 1px solid var(--card-border);
+      }
+    }
+
+    .bmi-number {
+      font-family: var(--font-mono);
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+      color: var(--success);
+      transition: color 0.3s ease;
+    }
+
+    .bmi-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .bmi-category-badge {
+      display: inline-block;
+      padding: 0.35rem 0.9rem;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-top: 0.75rem;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .bmi-detail-box h3 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .bmi-detail-box p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* BMI Scale Meter */
+    .bmi-meter-wrapper {
+      margin-top: 1rem;
+    }
+
+    .bmi-meter-bar {
+      height: 12px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(to right,
+        #38bdf8 0%, #38bdf8 18.5%,
+        #10b981 18.5%, #10b981 24.9%,
+        #f59e0b 24.9%, #f59e0b 29.9%,
+        #f97316 29.9%, #f97316 34.9%,
+        #ef4444 34.9%, #ef4444 100%
+      );
+      position: relative;
+      margin-bottom: 0.5rem;
+    }
+
+    .bmi-pointer {
+      position: absolute;
+      top: -6px;
+      width: 24px;
+      height: 24px;
+      background: #ffffff;
+      border: 3px solid #0f172a;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+      transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .bmi-scale-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .metric-card {
+      background: rgba(18, 24, 38, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      transition: all 0.2s ease;
+    }
+
+    .metric-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .metric-icon {
+      color: var(--accent-primary);
+      opacity: 0.8;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-sub {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+
+    /* ML Intelligence Section */
+    .ml-section {
+      background: linear-gradient(135deg, rgba(20, 28, 48, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+    }
+
+    .ml-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .ml-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .ml-tag {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .ml-dual-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+      .ml-dual-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ml-subbox {
+      background: rgba(10, 15, 26, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+
+    .ml-subbox h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.65rem;
+      color: #e2e8f0;
+    }
+
+    .prob-bar-container {
+      margin: 0.75rem 0;
+    }
+
+    .prob-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .prob-track {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .prob-fill-male {
+      background: #38bdf8;
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+
+    .prob-fill-female {
+      background: #f43f5e;
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+
+    .ml-explanation {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+      margin-top: 0.5rem;
+    }
+
+    /* Caloric Breakdown Table */
+    .calorie-targets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .calorie-targets {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .cal-pill {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .cal-pill .cal-type {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .cal-pill .cal-num {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0.2rem 0;
+    }
+
+    .cal-pill .cal-diff {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .cal-pill.cut .cal-diff { color: #38bdf8; }
+    .cal-pill.maint .cal-diff { color: #10b981; }
+    .cal-pill.bulk .cal-diff { color: #f59e0b; }
+
+    /* History & Log */
+    .history-card {
+      margin-top: 2rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-muted);
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .btn-delete-row {
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .btn-delete-row:hover {
+      opacity: 1;
+    }
+
+    /* Modal for Embed Code */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: #111827;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      max-width: 650px;
+      width: 100%;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    pre code {
+      display: block;
+      background: #030712;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    .btn-copy {
+      background: var(--accent-primary);
+      color: #04121e;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .top-toolbar, .btn-calc, .modal-overlay, .btn-action-icon, input[type="range"] {
+        display: none !important;
+      }
+      .card, .bmi-hero-card, .metric-card, .ml-section {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .val-display, .metric-value, .bmi-number {
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="badge-pill">
+        <span class="pulse-dot"></span> Machine Learning & Anthropometrics
+      </div>
+      <h1>Height & Weight <span>Health Tracker</span></h1>
+      <p class="subtitle">
+        Clinical health diagnostics powered by WHO standards, Mifflin-St Jeor metabolic calculations, and Logistic/Linear Regression trained on anthropometric population datasets.
+      </p>
+
+      <div class="top-toolbar">
+        <div class="toggle-group">
+          <button id="btnMetric" class="toggle-btn active" onclick="setUnitSystem('metric')">Metric (cm / kg)</button>
+          <button id="btnImperial" class="toggle-btn" onclick="setUnitSystem('imperial')">Imperial (ft / lbs)</button>
+        </div>
+
+        <button class="btn-action-icon" onclick="openEmbedModal()">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.854 4.854a.5.5 0 1 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708-.708L2.707 8l3.147-3.146zm4.292 0a.5.5 0 0 1 .708-.708l3.5 3.5a.5.5 0 0 1 0 .708l-3.5 3.5a.5.5 0 0 1-.708-.708L13.293 8l-3.147-3.146z"/></svg>
+          Embed on Website
+        </button>
+
+        <button class="btn-action-icon" onclick="window.print()">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+          Export Report
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="app-layout">
+      
+      <!-- Input Sidebar -->
+      <aside class="card">
+        <h2 class="card-title">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/></svg>
+          Biometric Inputs
+        </h2>
+
+        <!-- Sex Selector -->
+        <div class="form-group">
+          <div class="form-label-row">
+            <label>Biological Sex</label>
+          </div>
+          <div class="radio-pill-group">
+            <div id="sexMale" class="radio-pill active" onclick="setSex('male')">Male (XY)</div>
+            <div id="sexFemale" class="radio-pill" onclick="setSex('female')">Female (XX)</div>
+          </div>
+        </div>
+
+        <!-- Height Input -->
+        <div class="form-group" id="groupHeightMetric">
+          <div class="form-label-row">
+            <label for="heightCm">Height</label>
+            <span class="val-display" id="dispHeightCm">175 cm</span>
+          </div>
+          <div class="input-box-wrapper">
+            <input type="number" id="heightCm" min="100" max="230" step="0.5" value="175" oninput="onHeightChange(this.value, 'metric')">
+            <span class="unit-tag">cm</span>
+          </div>
+          <input type="range" id="sliderHeightCm" min="120" max="220" step="0.5" value="175" oninput="onHeightChange(this.value, 'metric')">
+        </div>
+
+        <div class="form-group" id="groupHeightImperial" style="display: none;">
+          <div class="form-label-row">
+            <label>Height (Feet & Inches)</label>
+            <span class="val-display" id="dispHeightImperial">5 ft 9 in</span>
+          </div>
+          <div class="dual-input">
+            <div class="input-box-wrapper">
+              <input type="number" id="heightFt" min="3" max="7" value="5" oninput="onImperialHeightChange()">
+              <span class="unit-tag">ft</span>
+            </div>
+            <div class="input-box-wrapper">
+              <input type="number" id="heightIn" min="0" max="11" value="9" oninput="onImperialHeightChange()">
+              <span class="unit-tag">in</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weight Input -->
+        <div class="form-group" id="groupWeightMetric">
+          <div class="form-label-row">
+            <label for="weightKg">Weight</label>
+            <span class="val-display" id="dispWeightKg">72.0 kg</span>
+          </div>
+          <div class="input-box-wrapper">
+            <input type="number" id="weightKg" min="30" max="250" step="0.5" value="72" oninput="onWeightChange(this.value, 'metric')">
+            <span class="unit-tag">kg</span>
+          </div>
+          <input type="range" id="sliderWeightKg" min="35" max="180" step="0.5" value="72" oninput="onWeightChange(this.value, 'metric')">
+        </div>
+
+        <div class="form-group" id="groupWeightImperial" style="display: none;">
+          <div class="form-label-row">
+            <label for="weightLbs">Weight</label>
+            <span class="val-display" id="dispWeightLbs">158.7 lbs</span>
+          </div>
+          <div class="input-box-wrapper">
+            <input type="number" id="weightLbs" min="66" max="550" step="0.5" value="158.7" oninput="onWeightChange(this.value, 'imperial')">
+            <span class="unit-tag">lbs</span>
+          </div>
+          <input type="range" id="sliderWeightLbs" min="80" max="350" step="0.5" value="158.7" oninput="onWeightChange(this.value, 'imperial')">
+        </div>
+
+        <!-- Age Input -->
+        <div class="form-group">
+          <div class="form-label-row">
+            <label for="age">Age</label>
+            <span class="val-display" id="dispAge">25 yrs</span>
+          </div>
+          <div class="input-box-wrapper">
+            <input type="number" id="age" min="14" max="100" value="25" oninput="onAgeChange(this.value)">
+            <span class="unit-tag">years</span>
+          </div>
+          <input type="range" id="sliderAge" min="14" max="90" value="25" oninput="onAgeChange(this.value)">
+        </div>
+
+        <!-- Activity Level -->
+        <div class="form-group">
+          <div class="form-label-row">
+            <label for="activity">Activity Level</label>
+          </div>
+          <select id="activity" onchange="calculateAll()">
+            <option value="1.2">Sedentary (Desk Job, little exercise)</option>
+            <option value="1.375" selected>Lightly Active (1-3 days/wk)</option>
+            <option value="1.55">Moderately Active (3-5 days/wk)</option>
+            <option value="1.725">Very Active (6-7 days intense)</option>
+            <option value="1.9">Extra Active (Athlete / Physical Labor)</option>
+          </select>
+        </div>
+
+        <button class="btn-calc" onclick="saveToHistory()">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+          Log & Save Snapshot
+        </button>
+      </aside>
+
+      <!-- Results Display Section -->
+      <main class="results-col">
+
+        <!-- 1. BMI Hero Showcase -->
+        <div class="card bmi-hero-card">
+          <div class="bmi-score-box">
+            <div class="bmi-number" id="bmiNumber">23.5</div>
+            <div class="bmi-label">Body Mass Index</div>
+            <span class="bmi-category-badge" id="bmiBadge">Normal Weight</span>
+          </div>
+
+          <div class="bmi-detail-box">
+            <h3 id="bmiStatusHeadline">Healthy & Optimal Body Composition</h3>
+            <p id="bmiAdviceText">
+              Your BMI is in the healthy WHO range (18.5 – 24.9). This is statistically associated with lower cardiovascular risk and balanced metabolic markers.
+            </p>
+
+            <div class="bmi-meter-wrapper">
+              <div class="bmi-meter-bar">
+                <div class="bmi-pointer" id="bmiPointer" style="left: 42%;"></div>
+              </div>
+              <div class="bmi-scale-labels">
+                <span>15 (Under)</span>
+                <span>18.5</span>
+                <span>25.0</span>
+                <span>30.0</span>
+                <span>40+ (Obese)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Core Biometrics Grid -->
+        <div class="metrics-grid">
+          
+          <!-- Ideal Weight Range -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Healthy Weight Range</span>
+              <svg class="metric-icon" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
+            </div>
+            <div class="metric-value" id="idealWeightVal">56.7 – 76.3 kg</div>
+            <div class="metric-sub" id="idealWeightDiff">You are inside your healthy range</div>
+          </div>
+
+          <!-- BMR -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Basal Metabolic Rate</span>
+              <svg class="metric-icon" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16z"/></svg>
+            </div>
+            <div class="metric-value" id="bmrVal">1,680 <span style="font-size: 1rem; color: var(--text-dim);">kcal</span></div>
+            <div class="metric-sub">Calories burned at absolute rest (Mifflin-St Jeor)</div>
+          </div>
+
+          <!-- Body Fat % -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Estimated Body Fat</span>
+              <svg class="metric-icon" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3.5A.5.5 0 0 1 8 8V4.5A.5.5 0 0 1 8 4z"/></svg>
+            </div>
+            <div class="metric-value" id="bodyFatVal">17.8%</div>
+            <div class="metric-sub" id="bodyFatCat">Fitness & Athletic Profile</div>
+          </div>
+
+          <!-- Daily Hydration -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Daily Hydration Target</span>
+              <svg class="metric-icon" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16a6 6 0 0 0 6-6c0-1.655-1.122-2.904-2.432-4.362C10.254 4.176 8.75 2.503 8 0c-.75 2.503-2.254 4.176-3.568 5.638C3.122 7.096 2 8.345 2 10a6 6 0 0 0 6 6z"/></svg>
+            </div>
+            <div class="metric-value" id="waterVal">2.5 L <span style="font-size: 0.95rem; color: var(--text-dim);">(10 glasses)</span></div>
+            <div class="metric-sub">Based on 35ml / kg metabolic baseline</div>
+          </div>
+        </div>
+
+        <!-- 3. TDEE & Caloric Strategy -->
+        <div class="card">
+          <div class="metric-header">
+            <h3 class="card-title" style="margin-bottom: 0;">Daily Caloric Targets (TDEE: <span id="tdeeVal" style="color:var(--accent-primary);">2,310</span> kcal)</h3>
+            <span class="val-display" style="font-size: 0.8rem; text-transform: uppercase;">Energy Blueprint</span>
+          </div>
+          <div class="calorie-targets">
+            <div class="cal-pill cut">
+              <div class="cal-type">Aggressive Fat Loss</div>
+              <div class="cal-num" id="calAggCut">1,810</div>
+              <div class="cal-diff">-500 kcal/day</div>
+            </div>
+            <div class="cal-pill cut">
+              <div class="cal-type">Mild Fat Loss</div>
+              <div class="cal-num" id="calMildCut">2,060</div>
+              <div class="cal-diff">-250 kcal/day</div>
+            </div>
+            <div class="cal-pill maint">
+              <div class="cal-type">Maintenance</div>
+              <div class="cal-num" id="calMaint">2,310</div>
+              <div class="cal-diff">0 kcal/day</div>
+            </div>
+            <div class="cal-pill bulk">
+              <div class="cal-type">Lean Muscle Gain</div>
+              <div class="cal-num" id="calBulk">2,610</div>
+              <div class="cal-diff">+300 kcal/day</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ML AI Intelligence Dashboard -->
+        <div class="ml-section">
+          <div class="ml-header">
+            <div class="ml-title">
+              <svg width="22" height="22" fill="#818cf8" viewBox="0 0 16 16"><path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-4.354-1.646a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 1 .708.708l-4 4a1.5 1.5 0 0 1-2.12 0L6 9.207l-2.646 2.647a.5.5 0 0 1-.708 0z"/></svg>
+              Trained Machine Learning Models
+            </div>
+            <span class="ml-tag">Scikit-Learn Regression & Classification</span>
+          </div>
+
+          <div class="ml-dual-card">
+            <!-- Logistic Regression: Frame / Gender Distribution -->
+            <div class="ml-subbox">
+              <h4>Logistic Regression: Anthropometric Frame</h4>
+              <div class="prob-bar-container">
+                <div class="prob-labels">
+                  <span id="probMaleLabel" style="color: #38bdf8;">Male Frame: 84%</span>
+                  <span id="probFemaleLabel" style="color: #f43f5e;">Female Frame: 16%</span>
+                </div>
+                <div class="prob-track">
+                  <div class="prob-fill-male" id="probFillMale" style="width: 84%;"></div>
+                  <div class="prob-fill-female" id="probFillFemale" style="width: 16%;"></div>
+                </div>
+              </div>
+              <p class="ml-explanation" id="mlFrameExplanation">
+                Evaluates logistic probability based on 10,000 empirical samples:
+                <br><code>z = 0.1991·H(cm) - 0.3856·W(kg) - 5.3558</code>
+              </p>
+            </div>
+
+            <!-- Linear Regression: Expected Population Weight -->
+            <div class="ml-subbox">
+              <h4>Linear Regression: Population Weight Baseline</h4>
+              <div style="margin: 0.5rem 0;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Expected Population Mean for your height:</div>
+                <div style="font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; color: #a5b4fc;" id="mlExpectedWeight">
+                  82.4 kg
+                </div>
+              </div>
+              <p class="ml-explanation" id="mlWeightExplanation">
+                Regression formula: <code>Weight = 1.4211 · Height - 166.28</code>
+                <br><span id="mlVarianceLabel" style="color: var(--accent-primary);">Variance: -10.4 kg from statistical mean</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. History / Progress Log -->
+        <div class="card history-card">
+          <div class="metric-header">
+            <h3 class="card-title" style="margin-bottom: 0;">Biometric Snapshot Log</h3>
+            <button class="btn-action-icon" style="font-size: 0.75rem; padding: 0.25rem 0.75rem;" onclick="clearHistory()">Clear History</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Height</th>
+                  <th>Weight</th>
+                  <th>BMI</th>
+                  <th>Status</th>
+                  <th>BMR</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Embed Modal -->
+  <div class="modal-overlay" id="embedModal" onclick="closeEmbedModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Embed in ANY Webpage</h3>
+        <button class="modal-close" onclick="closeEmbedModal()">&times;</button>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        You can embed this complete interactive Health Tracker into WordPress, Webflow, Squarespace, Wix, Notion, React, or standard HTML using this responsive iframe:
+      </p>
+      <pre><code id="embedCode">&lt;iframe src="https://your-domain.com/health-tracker.html" width="100%" height="900" frameborder="0" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"&gt;&lt;/iframe&gt;</code></pre>
+      <button class="btn-copy" onclick="copyEmbedCode()">Copy Embed Code</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // TRAINED MACHINE LEARNING MODEL PARAMETERS (From Colab Python Training)
+    // =========================================================================
+    const ML_MODEL = {
+      linear: {
+        slope: 1.4211,
+        intercept: -166.2791
+      },
+      logistic: {
+        coef_height: 0.1991,
+        coef_weight: -0.3856,
+        intercept: -5.3558
+      }
+    };
+
+    // State Variables
+    let currentUnit = 'metric'; // 'metric' or 'imperial'
+    let currentSex = 'male';    // 'male' or 'female'
+
+    // Internal canonical state (always kept in cm and kg)
+    let heightCm = 175.0;
+    let weightKg = 72.0;
+    let ageYears = 25;
+
+    // Unit Conversion Helpers
+    const CM_TO_INCH = 0.393701;
+    const INCH_TO_CM = 2.54;
+    const KG_TO_LBS = 2.20462;
+    const LBS_TO_KG = 0.453592;
+
+    function setUnitSystem(unit) {
+      currentUnit = unit;
+      document.getElementById('btnMetric').classList.toggle('active', unit === 'metric');
+      document.getElementById('btnImperial').classList.toggle('active', unit === 'imperial');
+
+      if (unit === 'metric') {
+        document.getElementById('groupHeightMetric').style.display = 'block';
+        document.getElementById('groupWeightMetric').style.display = 'block';
+        document.getElementById('groupHeightImperial').style.display = 'none';
+        document.getElementById('groupWeightImperial').style.display = 'none';
+      } else {
+        document.getElementById('groupHeightMetric').style.display = 'none';
+        document.getElementById('groupWeightMetric').style.display = 'none';
+        document.getElementById('groupHeightImperial').style.display = 'block';
+        document.getElementById('groupWeightImperial').style.display = 'block';
+      }
+
+      syncUIFromCanonical();
+      calculateAll();
+    }
+
+    function setSex(sex) {
+      currentSex = sex;
+      document.getElementById('sexMale').classList.toggle('active', sex === 'male');
+      document.getElementById('sexFemale').classList.toggle('active', sex === 'female');
+      calculateAll();
+    }
+
+    function onHeightChange(val, unit) {
+      val = parseFloat(val);
+      if (isNaN(val) || val <= 0) return;
+      if (unit === 'metric') {
+        heightCm = val;
+      }
+      syncUIFromCanonical();
+      calculateAll();
+    }
+
+    function onImperialHeightChange() {
+      const ft = parseFloat(document.getElementById('heightFt').value) || 0;
+      const inch = parseFloat(document.getElementById('heightIn').value) || 0;
+      const totalInches = (ft * 12) + inch;
+      heightCm = totalInches * INCH_TO_CM;
+      syncUIFromCanonical();
+      calculateAll();
+    }
+
+    function onWeightChange(val, unit) {
+      val = parseFloat(val);
+      if (isNaN(val) || val <= 0) return;
+      if (unit === 'metric') {
+        weightKg = val;
+      } else {
+        weightKg = val * LBS_TO_KG;
+      }
+      syncUIFromCanonical();
+      calculateAll();
+    }
+
+    function onAgeChange(val) {
+      val = parseInt(val);
+      if (isNaN(val) || val < 1) return;
+      ageYears = val;
+      document.getElementById('dispAge').textContent = ageYears + ' yrs';
+      document.getElementById('age').value = ageYears;
+      document.getElementById('sliderAge').value = ageYears;
+      calculateAll();
+    }
+
+    function syncUIFromCanonical() {
+      // Metric elements
+      document.getElementById('heightCm').value = heightCm.toFixed(1);
+      document.getElementById('sliderHeightCm').value = heightCm.toFixed(1);
+      document.getElementById('dispHeightCm').textContent = heightCm.toFixed(1) + ' cm';
+
+      document.getElementById('weightKg').value = weightKg.toFixed(1);
+      document.getElementById('sliderWeightKg').value = weightKg.toFixed(1);
+      document.getElementById('dispWeightKg').textContent = weightKg.toFixed(1) + ' kg';
+
+      // Imperial elements
+      const totalInches = heightCm * CM_TO_INCH;
+      const ft = Math.floor(totalInches / 12);
+      const inch = Math.round(totalInches % 12);
+      document.getElementById('heightFt').value = ft;
+      document.getElementById('heightIn').value = inch;
+      document.getElementById('dispHeightImperial').textContent = `${ft} ft ${inch} in`;
+
+      const lbs = weightKg * KG_TO_LBS;
+      document.getElementById('weightLbs').value = lbs.toFixed(1);
+      document.getElementById('sliderWeightLbs').value = lbs.toFixed(1);
+      document.getElementById('dispWeightLbs').textContent = lbs.toFixed(1) + ' lbs';
+    }
+
+    function calculateAll() {
+      const heightM = heightCm / 100.0;
+      if (heightM <= 0) return;
+
+      // 1. BMI
+      const bmi = weightKg / (heightM * heightM);
+      const bmiEl = document.getElementById('bmiNumber');
+      const badgeEl = document.getElementById('bmiBadge');
+      const headlineEl = document.getElementById('bmiStatusHeadline');
+      const adviceEl = document.getElementById('bmiAdviceText');
+      const pointerEl = document.getElementById('bmiPointer');
+
+      bmiEl.textContent = bmi.toFixed(1);
+
+      let color = '#10b981';
+      let category = 'Normal Weight';
+      let headline = 'Healthy & Optimal Body Composition';
+      let advice = 'Your BMI is in the healthy WHO range (18.5 – 24.9). This is statistically associated with the lowest risk of chronic disease and balanced cardiovascular function.';
+
+      if (bmi < 18.5) {
+        color = '#38bdf8';
+        category = 'Underweight';
+        headline = 'Below Clinical Weight Benchmark';
+        advice = 'A BMI below 18.5 can indicate insufficient caloric intake or nutrient deficiency. Focus on nutrient-dense meals and progressive resistance training.';
+      } else if (bmi >= 25.0 && bmi < 30.0) {
+        color = '#f59e0b';
+        category = 'Overweight';
+        headline = 'Elevated Body Mass';
+        advice = 'A BMI between 25.0 and 29.9 indicates potential excess body weight. If this is not dense muscle mass, modest caloric deficits and cardiovascular activity are recommended.';
+      } else if (bmi >= 30.0 && bmi < 35.0) {
+        color = '#f97316';
+        category = 'Obesity Class I';
+        headline = 'High Metabolic Strain';
+        advice = 'BMI above 30 is clinically classified as Obese Class I, linked to increased risk for insulin resistance, hypertension, and sleep apnea.';
+      } else if (bmi >= 35.0) {
+        color = '#ef4444';
+        category = 'Obesity Class II/III';
+        headline = 'Severe Health Risk';
+        advice = 'Significantly elevated health risk. A medically-supervised nutritional protocol and regular clinical checkups are strongly advised.';
+      }
+
+      bmiEl.style.color = color;
+      badgeEl.textContent = category;
+      badgeEl.style.color = color;
+      badgeEl.style.backgroundColor = color + '22';
+      badgeEl.style.borderColor = color + '55';
+      headlineEl.textContent = headline;
+      adviceEl.textContent = advice;
+
+      // Meter Pointer Position (Scale 15 to 40)
+      const minScale = 15;
+      const maxScale = 40;
+      const clampBmi = Math.max(minScale, Math.min(maxScale, bmi));
+      const percent = ((clampBmi - minScale) / (maxScale - minScale)) * 100;
+      pointerEl.style.left = percent.toFixed(1) + '%';
+
+      // 2. Ideal Body Weight Range (WHO BMI 18.5 to 24.9)
+      const minIdealKg = 18.5 * heightM * heightM;
+      const maxIdealKg = 24.9 * heightM * heightM;
+      const idealWeightValEl = document.getElementById('idealWeightVal');
+      const idealWeightDiffEl = document.getElementById('idealWeightDiff');
+
+      if (currentUnit === 'metric') {
+        idealWeightValEl.textContent = `${minIdealKg.toFixed(1)} – ${maxIdealKg.toFixed(1)} kg`;
+      } else {
+        idealWeightValEl.textContent = `${(minIdealKg * KG_TO_LBS).toFixed(1)} – ${(maxIdealKg * KG_TO_LBS).toFixed(1)} lbs`;
+      }
+
+      if (weightKg < minIdealKg) {
+        const diff = (minIdealKg - weightKg).toFixed(1);
+        idealWeightDiffEl.textContent = `${diff} kg below healthy threshold`;
+        idealWeightDiffEl.style.color = '#38bdf8';
+      } else if (weightKg > maxIdealKg) {
+        const diff = (weightKg - maxIdealKg).toFixed(1);
+        idealWeightDiffEl.textContent = `${diff} kg above healthy threshold`;
+        idealWeightDiffEl.style.color = '#f59e0b';
+      } else {
+        idealWeightDiffEl.textContent = 'You are right in your healthy target window!';
+        idealWeightDiffEl.style.color = '#10b981';
+      }
+
+      // 3. BMR (Mifflin-St Jeor)
+      // Men: 10*W + 6.25*H - 5*Age + 5
+      // Women: 10*W + 6.25*H - 5*Age - 161
+      let bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * ageYears);
+      if (currentSex === 'male') {
+        bmr += 5;
+      } else {
+        bmr -= 161;
+      }
+      bmr = Math.round(bmr);
+      document.getElementById('bmrVal').innerHTML = `${bmr.toLocaleString()} <span style="font-size: 1rem; color: var(--text-dim);">kcal</span>`;
+
+      // TDEE
+      const activityMultiplier = parseFloat(document.getElementById('activity').value) || 1.375;
+      const tdee = Math.round(bmr * activityMultiplier);
+      document.getElementById('tdeeVal').textContent = tdee.toLocaleString();
+      document.getElementById('calAggCut').textContent = (tdee - 500).toLocaleString();
+      document.getElementById('calMildCut').textContent = (tdee - 250).toLocaleString();
+      document.getElementById('calMaint').textContent = tdee.toLocaleString();
+      document.getElementById('calBulk').textContent = (tdee + 300).toLocaleString();
+
+      // 4. Body Fat % (Deurenberg Formula)
+      // Fat % = 1.20 * BMI + 0.23 * Age - 10.8 * Sex - 5.4 (Sex=1 male, 0 female)
+      const sexFactor = (currentSex === 'male') ? 1 : 0;
+      let bodyFat = (1.20 * bmi) + (0.23 * ageYears) - (10.8 * sexFactor) - 5.4;
+      bodyFat = Math.max(3.0, Math.min(65.0, bodyFat));
+      document.getElementById('bodyFatVal').textContent = bodyFat.toFixed(1) + '%';
+
+      let fatCategory = 'Average Fitness';
+      if (currentSex === 'male') {
+        if (bodyFat < 6) fatCategory = 'Essential Fat';
+        else if (bodyFat <= 13) fatCategory = 'Athletic Build';
+        else if (bodyFat <= 17) fatCategory = 'Fit Profile';
+        else if (bodyFat <= 24) fatCategory = 'Average Population';
+        else fatCategory = 'High Adiposity';
+      } else {
+        if (bodyFat < 14) fatCategory = 'Essential Fat';
+        else if (bodyFat <= 20) fatCategory = 'Athletic Build';
+        else if (bodyFat <= 24) fatCategory = 'Fit Profile';
+        else if (bodyFat <= 31) fatCategory = 'Average Population';
+        else fatCategory = 'High Adiposity';
+      }
+      document.getElementById('bodyFatCat').textContent = fatCategory;
+
+      // 5. Water Target (35ml/kg)
+      const waterLiters = (weightKg * 0.035).toFixed(1);
+      const glasses = Math.round((weightKg * 35) / 250);
+      document.getElementById('waterVal').innerHTML = `${waterLiters} L <span style="font-size: 0.95rem; color: var(--text-dim);">(${glasses} glasses)</span>`;
+
+      // 6. MACHINE LEARNING: Logistic Regression for Frame/Gender Probability
+      // z = coef_height * H + coef_weight * W + intercept
+      const z = (ML_MODEL.logistic.coef_height * heightCm) + 
+                (ML_MODEL.logistic.coef_weight * weightKg) + 
+                ML_MODEL.logistic.intercept;
+      const probFemale = 1.0 / (1.0 + Math.exp(-Math.max(-20, Math.min(20, z))));
+      const probMale = 1.0 - probFemale;
+
+      const pMalePct = Math.round(probMale * 100);
+      const pFemalePct = 100 - pMalePct;
+
+      document.getElementById('probFillMale').style.width = pMalePct + '%';
+      document.getElementById('probFillFemale').style.width = pFemalePct + '%';
+      document.getElementById('probMaleLabel').textContent = `Male Frame: ${pMalePct}%`;
+      document.getElementById('probFemaleLabel').textContent = `Female Frame: ${pFemalePct}%`;
+
+      // 7. MACHINE LEARNING: Linear Regression for Expected Population Weight
+      const expectedKg = (ML_MODEL.linear.slope * heightCm) + ML_MODEL.linear.intercept;
+      const weightDiff = weightKg - expectedKg;
+      const sign = weightDiff >= 0 ? '+' : '';
+
+      if (currentUnit === 'metric') {
+        document.getElementById('mlExpectedWeight').textContent = `${expectedKg.toFixed(1)} kg`;
+        document.getElementById('mlVarianceLabel').textContent = `Variance: ${sign}${weightDiff.toFixed(1)} kg from statistical population baseline`;
+      } else {
+        const expLbs = expectedKg * KG_TO_LBS;
+        const diffLbs = weightDiff * KG_TO_LBS;
+        document.getElementById('mlExpectedWeight').textContent = `${expLbs.toFixed(1)} lbs`;
+        document.getElementById('mlVarianceLabel').textContent = `Variance: ${sign}${diffLbs.toFixed(1)} lbs from statistical population baseline`;
+      }
+    }
+
+    // History Storage
+    function saveToHistory() {
+      const bmi = (weightKg / ((heightCm/100) * (heightCm/100))).toFixed(1);
+      let cat = 'Normal';
+      if (bmi < 18.5) cat = 'Under';
+      else if (bmi >= 25 && bmi < 30) cat = 'Over';
+      else if (bmi >= 30) cat = 'Obese';
+
+      const entry = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        height: heightCm.toFixed(1) + ' cm',
+        weight: weightKg.toFixed(1) + ' kg',
+        bmi: bmi,
+        cat: cat,
+        bmr: document.getElementById('bmrVal').textContent.split(' ')[0]
+      };
+
+      const history = JSON.parse(localStorage.getItem('health_tracker_history') || '[]');
+      history.unshift(entry);
+      if (history.length > 20) history.pop();
+      localStorage.setItem('health_tracker_history', JSON.stringify(history));
+
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const tbody = document.getElementById('historyTableBody');
+      const history = JSON.parse(localStorage.getItem('health_tracker_history') || '[]');
+
+      if (history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 1.5rem;">No saved snapshots yet. Click "Log & Save Snapshot" above!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = history.map(item => `
+        <tr>
+          <td>${item.date}</td>
+          <td>${item.height}</td>
+          <td>${item.weight}</td>
+          <td style="font-weight: 700; color: var(--accent-primary);">${item.bmi}</td>
+          <td><span style="background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 4px;">${item.cat}</span></td>
+          <td>${item.bmr} kcal</td>
+          <td><button class="btn-delete-row" onclick="deleteHistoryItem(${item.id})">✕</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function deleteHistoryItem(id) {
+      let history = JSON.parse(localStorage.getItem('health_tracker_history') || '[]');
+      history = history.filter(item => item.id !== id);
+      localStorage.setItem('health_tracker_history', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      if (confirm('Clear all recorded snapshots?')) {
+        localStorage.removeItem('health_tracker_history');
+        renderHistory();
+      }
+    }
+
+    // Embed Modal
+    function openEmbedModal() {
+      document.getElementById('embedModal').style.display = 'flex';
+    }
+
+    function closeEmbedModal() {
+      document.getElementById('embedModal').style.display = 'none';
+    }
+
+    function copyEmbedCode() {
+      const code = document.getElementById('embedCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('Embed code copied to clipboard!');
+      });
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      calculateAll();
+      renderHistory();
+    });
+  </script>
+</body>
+</html>
